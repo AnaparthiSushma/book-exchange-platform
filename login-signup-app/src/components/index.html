@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Exchange</title>
+  <style>
+    img { max-width: 100px; }
+  </style>
+</head>
+<body>
+
+  <h1>Book Exchange</h1>
+
+  <!-- Section for searching books -->
+  <h2>Search for a Book to Offer</h2>
+  <input type="text" id="searchQuery" placeholder="Search for a book...">
+  <button id="searchButton">Search</button>
+
+  <ul id="searchResults">
+    <!-- Search results will be shown here -->
+  </ul>
+
+  <!-- Section for offering a book -->
+  <h2>Offer a Book for Exchange</h2>
+  <form id="offerBookForm">
+    <label for="userId">Your User ID:</label>
+    <input type="number" id="userId" required>
+
+    <label for="bookSelect">Choose a Book to Offer:</label>
+    <select id="bookSelect" required></select>
+
+    <button type="submit">Offer Book</button>
+  </form>
+
+  <!-- Section for viewing available books -->
+  <h2>Books Available for Exchange</h2>
+  <ul id="availableBooksList">
+    <!-- Books will be dynamically listed here -->
+  </ul>
+
+  <script>
+    // Fetch books from the Google Books API based on search query
+    async function searchBooks(query) {
+      const response = await fetch(`/api/search-books?query=${query}`);
+      const books = await response.json();
+      const searchResultsList = document.getElementById('searchResults');
+      const bookSelect = document.getElementById('bookSelect');
+      
+      // Clear previous results
+      searchResultsList.innerHTML = '';
+      bookSelect.innerHTML = '';
+
+      // Populate the search results and the book selection dropdown
+      books.forEach(book => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img src="${book.image}" alt="${book.title}">
+          <strong>${book.title}</strong> by ${book.authors.join(', ')}
+        `;
+        searchResultsList.appendChild(li);
+
+        // Add option to the select dropdown
+        const option = document.createElement('option');
+        option.value = book.id;
+        option.textContent = `${book.title} by ${book.authors.join(', ')}`;
+        bookSelect.appendChild(option);
+      });
+    }
+
+    // Fetch available books for exchange
+    async function fetchAvailableBooks() {
+      const response = await fetch('/api/available-books');
+      const availableBooks = await response.json();
+      const availableBooksList = document.getElementById('availableBooksList');
+      availableBooksList.innerHTML = '';  // Clear existing list
+
+      availableBooks.forEach(book => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img src="${book.image}" alt="${book.title}">
+          <strong>${book.title}</strong> by ${book.authors.join(', ')}
+        `;
+        availableBooksList.appendChild(li);
+      });
+    }
+
+    // Handle book offering form submission
+    document.getElementById('offerBookForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('userId').value;
+      const bookId = document.getElementById('bookSelect').value;
+      const bookTitle = document.getElementById('bookSelect').selectedOptions[0].text;
+
+      // Send offer request to backend
+      const response = await fetch('/api/offer-book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          bookId,
+          title: bookTitle,
+          authors: ['Unknown'], // You can adjust this if you want to include authors
+          image: 'https://via.placeholder.com/100' // Replace with actual image URL if available
+        }),
+      });
+
+      const data = await response.json();
+      alert(data.message);
+
+      // Refresh available books after offering a book
+      fetchAvailableBooks();
+    });
+
+    // Event listener for searching books
+    document.getElementById('searchButton').addEventListener('click', () => {
+      const query = document.getElementById('searchQuery').value;
+      if (query) searchBooks(query);
+    });
+
+    // Initial page load
+    fetchAvailableBooks();
+  </script>
+
+</body>
+</html>
