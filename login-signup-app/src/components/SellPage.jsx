@@ -35,7 +35,7 @@ const SellPage = ({ location, user }) => {
   const fetchBookSuggestions = async (query) => {
     try {
       const response = await axios.get(
-        `https://www.googleapis.com/books/v1/volumes?q=${query}&key=AIzaSyAjAyAa6p1_654OarxW9XECrJXPOAkNilY`
+        `https://www.googleapis.com/books/v1/volumes?q=${query}&key=YOUR_API_KEY`
       );
 
       if (response.data.items) {
