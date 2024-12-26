@@ -33,7 +33,7 @@ const Dashboard = () => {
           const { latitude, longitude } = position.coords;
           try {
             const response = await axios.get(
-              `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=8d253da17aca49eb86a2208b477cb9b7`
+              `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=YOUR_AP_KEY`
             );
             const result = response.data.results[0];
             setLocation(result?.formatted || "Location not found");
